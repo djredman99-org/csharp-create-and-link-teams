@@ -1,3 +1,5 @@
+using GitHubTeamManager.Config;
+using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
@@ -6,18 +8,18 @@ namespace GitHubTeamManager.Services;
 public class SCIMService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _scimToken;
+    
     private readonly string _enterpriseSlug;
 
-    public SCIMService(string baseUrl, string scimToken, string enterpriseSlug)
+    public SCIMService(IOptions<GitHubOptions> gitHubOptions)
     {
+        GitHubOptions ghOptions = gitHubOptions.Value;
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri(baseUrl)
+            BaseAddress = new Uri(ghOptions.APIBaseUrl)
         };
-        _scimToken = scimToken;
-        _enterpriseSlug = enterpriseSlug;
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", scimToken);
+        _enterpriseSlug = ghOptions.Enterprise;
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ghOptions.SCIMToken);
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
@@ -32,7 +34,7 @@ public class SCIMService
             PropertyNameCaseInsensitive = true
         });
         
-        return scimResponse?.Resources ?? new List<SCIMGroup>();
+        return scimResponse?.Resources ?? [];
     }
 }
 
