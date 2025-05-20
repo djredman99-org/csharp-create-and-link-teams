@@ -45,18 +45,12 @@ foreach (var group in scimGroups)
         var newTeam = await githubService.CreateTeamAsync(group.DisplayName, $"Team synced with IdP group {group.Id}");
         Console.WriteLine($"Created team: {newTeam.Name} (ID: {newTeam.Id})");
 
-        // Link the team to the IdP group
-        Console.WriteLine($"Linking team {newTeam.Name} to IdP group {group.DisplayName}");
-        await githubService.LinkTeamToGroupAsync(newTeam.Id, group.Id);
-        Console.WriteLine($"Successfully linked team {newTeam.Name} to IdP group");
+        existingTeam = newTeam;        
     }
-    else
-    {
-        Console.WriteLine($"Team already exists: {existingTeam.Name} (ID: {existingTeam.Id})");
-        Console.WriteLine($"Linking existing team {existingTeam.Name} to IdP group {group.DisplayName}");
-        await githubService.LinkTeamToGroupAsync(existingTeam.Id, group.Id);
-        Console.WriteLine($"Successfully linked team {existingTeam.Name} to IdP group");
-    }
+    Console.WriteLine($"Linking team {existingTeam.Name} to IdP group {group.DisplayName}");
+    await githubService.LinkTeamToGroupAsync(existingTeam.Id, group.Id);
+    Console.WriteLine($"Successfully linked team {existingTeam.Name} to IdP group");
+    
 }
 
 Console.WriteLine("Completed processing all SCIM groups.");
