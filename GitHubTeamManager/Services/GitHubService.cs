@@ -21,7 +21,7 @@ public class GitHubService
     {
         if (_teamCache == null)
         {
-            _teamCache = [];
+            _teamCache = new List<Team>();
             _teamCache.AddRange(await _gitHubClient.Organization.Team.GetAll(this._organizationName));
         }
         return _teamCache;
