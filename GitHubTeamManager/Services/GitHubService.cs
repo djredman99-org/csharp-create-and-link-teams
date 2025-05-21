@@ -83,53 +83,7 @@ public class GitHubService
         return teams.FirstOrDefault(t => t.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
     }
 
-    public async Task<Team?> GetTeamByIdAsync(long id)
-    {
-        IReadOnlyList<Team> teams = await this.getTeams();
-        return teams.FirstOrDefault(x => x.Id == id);
-    }
-
-    public async Task<bool> IsTeamLinkedToGroupAsync(string teamSlug)
-    {
-        // Make a GET request to check if the team is linked to an external group
-        var response = await _httpClient.GetAsync($"/orgs/{_organizationName}/teams/{teamSlug}/external-groups");
-
-        if (response.IsSuccessStatusCode)
-        {
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            // Parse the response to check if a link exists
-            var jsonDocument = JsonDocument.Parse(responseContent);
-            var root = jsonDocument.RootElement;
-
-            // Check if the "group_id" field exists in the response
-            return root.TryGetProperty("group_id", out _);
-        }
-        else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            // If the endpoint returns 404, assume no link exists
-            return false;
-        }
-        else
-        {
-            // Handle other unexpected status codes
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Failed to check team link. Status: {response.StatusCode}, Error: {errorContent}");
-        }
-    }
-    public async Task RemoveAllMembers(long teamId)
-    {
-        // this is a brute force way of removing the default added user, and makes having groups that are the same name as IDP but do not track a BadIdea(TM)
-        // it would be better to only do this on new groups but this will allow it to 'fix' groups that were previously created
-        IReadOnlyList<User> users = await _gitHubClient.Organization.Team.GetAllMembers(teamId);
-        foreach (var user in users)
-        {
-            Console.WriteLine($"Removing user {user.Name}");
-            _ = await _gitHubClient.Organization.Team.RemoveMembership(user.Id, user.Name);
-        }
-
-
-    }
+   
     public async Task LinkTeamToGroupAsync(string teamSlug, long scimGroupId)
     {
         var linkRequest = new
