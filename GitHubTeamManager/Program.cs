@@ -34,7 +34,7 @@ var scimGroups = await githubService.GetGroupsAsync();
 
 foreach (var group in scimGroups)
 {
-    Console.WriteLine($"Processing SCIM group: {group.group_name}");
+    Console.WriteLine($"Processing external group: {group.group_name}");
     // Check if a corresponding GitHub team exists
     var existingTeam = await githubService.GetTeamByNameAsync(group.group_name);
 
