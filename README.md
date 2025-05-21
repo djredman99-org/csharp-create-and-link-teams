@@ -24,21 +24,19 @@ Create an `appsettings.json` file in the application directory with the followin
 
 ```json
 {
-  "GitHubToken": "your-github-token",
-  "EnterpriseSlug": "your-enterprise-slug",
-  "GitHubOrganization": "your-organization-name",
-  "SCIMToken": "your-scim-token",
-  "SCIMBaseUrl": "https://api.github.com"
+  "GitHub": {
+    "Token": "your-github-token",
+    "OrganizationName": "your-organization-name",
+    "BaseUrl": "https://api.github.com"
+  }
 }
 ```
 
 ### Required Settings
 
-- `GitHubToken`: A GitHub Personal Access Token with `admin:org` scope
-- `EnterpriseSlug`: Your GitHub Enterprise slug (URL-friendly name)
-- `GitHubOrganization`: The name of your GitHub organization
-- `SCIMToken`: The SCIM token provided by your IdP
-- `SCIMBaseUrl`: The base URL for GitHub's API (usually https://api.github.com)
+- `GitHub:Token`: A GitHub Personal Access Token with `admin:org` scope
+- `GitHub:OrganizationName`: The name of your GitHub organization
+- `GitHub:BaseUrl`: The base URL for GitHub's API (defaults to https://api.github.com)
 
 ## Building and Running
 
@@ -54,11 +52,11 @@ dotnet run
 
 ## How It Works
 
-1. The application connects to GitHub's SCIM API to fetch all available enterprise groups
-2. For each SCIM group:
+1. The application connects to GitHub's External Groups API to fetch all available external groups
+2. For each external group:
    - Checks if a corresponding GitHub team exists
    - If no team exists, creates a new team with matching name
-   - Links the team (new or existing) to the SCIM group using GitHub's external groups API
+   - Links the team (new or existing) to the external group using GitHub's Teams API
 3. Provides detailed logging of all operations
 
 ## Error Handling
