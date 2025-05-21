@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using GitHubTeamManager.Config;
 using GitHubTeamManager.Services;
+using Octokit;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((context, config) =>
@@ -18,7 +19,6 @@ var host = Host.CreateDefaultBuilder(args)
         services.Configure<GitHubOptions>(context.Configuration.GetSection(GitHubOptions.SectionName));
 
         // Register services
-        services.AddTransient<SCIMService>();
         services.AddTransient<GitHubService>();
     })
     .Build();
@@ -27,30 +27,28 @@ using var scope = host.Services.CreateScope();
 var services = scope.ServiceProvider;
 
 // Resolve services
-var scimService = services.GetRequiredService<SCIMService>();
 var githubService = services.GetRequiredService<GitHubService>();
 
 Console.WriteLine("Fetching SCIM groups...");
-var scimGroups = await scimService.GetGroupsAsync();
+var scimGroups = await githubService.GetGroupsAsync();
 
 foreach (var group in scimGroups)
 {
-    Console.WriteLine($"Processing SCIM group: {group.DisplayName}");
+    Console.WriteLine($"Processing SCIM group: {group.group_name}");
     // Check if a corresponding GitHub team exists
-    var existingTeam = await githubService.GetTeamByNameAsync(group.DisplayName);
+    var existingTeam = await githubService.GetTeamByNameAsync(group.group_name);
+
 
     if (existingTeam == null)
     {
-        Console.WriteLine($"Creating new GitHub team for group: {group.DisplayName}");
-        var newTeam = await githubService.CreateTeamAsync(group.DisplayName, $"Team synced with IdP group {group.Id}");
-        Console.WriteLine($"Created team: {newTeam.Name} (ID: {newTeam.Id})");
-
-        existingTeam = newTeam;        
-    }
-    Console.WriteLine($"Linking team {existingTeam.Name} to IdP group {group.DisplayName}");
-    await githubService.LinkTeamToGroupAsync(existingTeam.Id, group.Id);
-    Console.WriteLine($"Successfully linked team {existingTeam.Name} to IdP group");
-    
+        Console.WriteLine($"Creating new GitHub team for group: {group.group_name}");
+        var newTeam = await githubService.CreateTeamAsync(group.group_name, $"Team synced with IdP group {group.group_id}");
+        Console.WriteLine($"Created team: {newTeam.Name} (ID: {newTeam.Id})");        
+        Console.WriteLine($"Linking team {newTeam.Name} to IdP group {group.group_name}");
+        await githubService.LinkTeamToGroupAsync(newTeam.Slug, group.group_id);
+        Console.WriteLine($"Successfully linked team {newTeam.Name} to IdP group");        
+    }    
 }
+
 
 Console.WriteLine("Completed processing all SCIM groups.");
