@@ -1,15 +1,16 @@
 # GitHub Team Manager
 
-This application synchronizes IdP groups with GitHub Teams using the SCIM API. It performs two main functions:
-1. Fetches all groups from the IdP using the SCIM endpoint
-2. Creates corresponding GitHub Teams and links them to the IdP groups
+This application automates team management in GitHub Enterprise by fetching external groups through the GitHub Teams External Groups API (for EMU accounts). It performs two main functions:
+1. Retrieves external groups from the GitHub Enterprise instance
+2. Creates and links GitHub Teams to these external groups automatically
+3. Ignores IdP groups if a Team already exists with that group name
 
 ## Prerequisites
 
 - .NET 8.0 SDK or later
-- GitHub Organization with SCIM provisioning enabled
-- GitHub Personal Access Token with appropriate permissions
-- SCIM Token for your IdP
+- GitHub Enterprise EMU account
+- GitHub Personal Access Token with `admin:org` scope
+- Organization admin access
 
 ## Configuration
 
@@ -17,19 +18,19 @@ Create an `appsettings.json` file in the project directory with the following st
 
 ```json
 {
-  "GitHubToken": "your-github-token",
-  "GitHubOrganization": "your-organization-name",
-  "SCIMToken": "your-scim-token",
-  "SCIMBaseUrl": "your-scim-base-url"
+  "GitHub": {
+    "Token": "your-github-token",
+    "OrganizationName": "your-organization-name",
+    "BaseUrl": "https://api.github.com"
+  }
 }
 ```
 
 Replace the placeholder values with your actual configuration:
 
-- `GitHubToken`: A GitHub Personal Access Token with `admin:org` scope
-- `GitHubOrganization`: Your GitHub organization name
-- `SCIMToken`: The SCIM token provided by your IdP
-- `SCIMBaseUrl`: The base URL for SCIM API endpoints
+- `Token`: A GitHub Personal Access Token with `admin:org` scope
+- `OrganizationName`: Your GitHub organization name
+- `BaseUrl`: The base URL for GitHub's API (defaults to https://api.github.com)
 
 ## Building the Application
 
