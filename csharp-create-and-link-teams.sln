@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubTeamManager", "GitHubTeamManager\GitHubTeamManager.csproj", "{21F390B8-8701-4258-83E1-29843F08C7BC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B5CE66CC-EC11-4673-88FB-590BDFAEA0A9}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21F390B8-8701-4258-83E1-29843F08C7BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21F390B8-8701-4258-83E1-29843F08C7BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21F390B8-8701-4258-83E1-29843F08C7BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21F390B8-8701-4258-83E1-29843F08C7BC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3AF441A7-9CF0-41A2-A980-C3FA825EC8DA}
+	EndGlobalSection
+EndGlobal

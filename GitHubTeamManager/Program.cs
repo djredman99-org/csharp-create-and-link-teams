@@ -1,46 +1,54 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using GitHubTeamManager.Config;
 using GitHubTeamManager.Services;
+using Octokit;
 
-var configuration = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false)
-    .AddEnvironmentVariables()
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureAppConfiguration((context, config) =>
+    {
+        config.SetBasePath(Directory.GetCurrentDirectory())
+              .AddJsonFile("appsettings.json", optional: false)
+              .AddJsonFile("appsettings.local.json", optional: true)
+              .AddEnvironmentVariables();
+    })
+    .ConfigureServices((context, services) =>
+    {
+        // Bind AppSettings to IOptions pattern
+        services.Configure<GitHubOptions>(context.Configuration.GetSection(GitHubOptions.SectionName));
+
+        // Register services
+        services.AddTransient<GitHubService>();
+    })
     .Build();
 
-var settings = configuration.Get<AppSettings>()
-    ?? throw new InvalidOperationException("Failed to load application settings");
+using var scope = host.Services.CreateScope();
+var services = scope.ServiceProvider;
 
-var scimService = new SCIMService(settings.SCIMBaseUrl, settings.SCIMToken, settings.EnterpriseSlug);
-var githubService = new GitHubService(settings.GitHubToken, settings.EnterpriseSlug, settings.SCIMToken);
+// Resolve services
+var githubService = services.GetRequiredService<GitHubService>();
 
 Console.WriteLine("Fetching SCIM groups...");
-var scimGroups = await scimService.GetGroupsAsync();
+var scimGroups = await githubService.GetGroupsAsync();
 
 foreach (var group in scimGroups)
 {
-    Console.WriteLine($"Processing SCIM group: {group.DisplayName}");
-      // Check if a corresponding GitHub team exists
-    var existingTeam = await githubService.GetTeamByNameAsync(settings.GitHubOrganization, group.DisplayName);
-    
+    Console.WriteLine($"Processing external group: {group.group_name}");
+    // Check if a corresponding GitHub team exists
+    var existingTeam = await githubService.GetTeamByNameAsync(group.group_name);
+
+
     if (existingTeam == null)
     {
-        Console.WriteLine($"Creating new GitHub team for group: {group.DisplayName}");
-        var newTeam = await githubService.CreateTeamAsync(settings.GitHubOrganization, group.DisplayName, $"Team synced with IdP group {group.Id}");
-        Console.WriteLine($"Created team: {newTeam.Name} (ID: {newTeam.Id})");
-        
-        // Link the team to the IdP group
-        Console.WriteLine($"Linking team {newTeam.Name} to IdP group {group.DisplayName}");
-        await githubService.LinkTeamToGroupAsync(newTeam.Id, group.Id);
-        Console.WriteLine($"Successfully linked team {newTeam.Name} to IdP group");
-    }
-    else
-    {
-        Console.WriteLine($"Team already exists: {existingTeam.Name} (ID: {existingTeam.Id})");
-        Console.WriteLine($"Linking existing team {existingTeam.Name} to IdP group {group.DisplayName}");
-        await githubService.LinkTeamToGroupAsync(existingTeam.Id, group.Id);
-        Console.WriteLine($"Successfully linked team {existingTeam.Name} to IdP group");
-    }
+        Console.WriteLine($"Creating new GitHub team for group: {group.group_name}");
+        var newTeam = await githubService.CreateTeamAsync(group.group_name, $"Team synced with IdP group {group.group_id}");
+        Console.WriteLine($"Created team: {newTeam.Name} (ID: {newTeam.Id})");        
+        Console.WriteLine($"Linking team {newTeam.Name} to IdP group {group.group_name}");
+        await githubService.LinkTeamToGroupAsync(newTeam.Slug, group.group_id);
+        Console.WriteLine($"Successfully linked team {newTeam.Name} to IdP group");        
+    }    
 }
+
 
 Console.WriteLine("Completed processing all SCIM groups.");
